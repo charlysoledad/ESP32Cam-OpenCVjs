@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>COLOR DETECTION</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script async src="./opencv.js" type="text/javascript"></script>
+</head>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Verdana, Geneva, Tahoma, sans-serif
+  }
+
+  html {
+    background-color: #3a3a3a;
+    color: #f0f0f0;
+  }
+
+  body {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 3rem;
+  }
+
+  button {
+    padding: 8px 16px;
+    margin: 12px 0;
+    cursor: pointer;
+  }
+
+  .title {
+    margin-bottom: 8px;
+  }
+
+  .gridProcessed {
+    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px 16px;
+    grid-auto-flow: row dense;
+    justify-content: center;
+    align-content: center;
+    justify-items: center;
+    align-items: center;
+    grid-template-areas:
+      "view3 view3"
+      "view1 view2";
+  }
+
+  .view1 {
+    grid-area: view1;
+  }
+
+  .view2 {
+    grid-area: view2;
+  }
+
+  .view3 {
+    grid-area: view3;
+  }
+
+  .section {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 25px;
+  }
+
+  .col {
+    text-align: center;
+  }
+
+  @media screen and (-webkit-min-device-pixel-ratio:0) {
+    .redTable input[type='range'] {
+      margin-left: 10px;
+      overflow: hidden;
+      width: 120px;
+      -webkit-appearance: none;
+      background-color: #410909;
+    }
+
+    .redTable input[type='range']::-webkit-slider-runnable-track {
+      height: 10px;
+      -webkit-appearance: none;
+      color: #13bba4;
+      margin-top: -1px;
+    }
+
+    .redTable input[type='range']::-webkit-slider-thumb {
+      width: 10px;
+      -webkit-appearance: none;
+      height: 10px;
+      cursor: ew-resize;
+      background: #e4e3e3;
+      box-shadow: -80px 0 0 80px #f74343;
+    }
+
+    .blueTable input[type='range'] {
+      margin-left: 10px;
+      overflow: hidden;
+      width: 120px;
+      -webkit-appearance: none;
+      background-color: #180941;
+    }
+
+    .blueTable input[type='range']::-webkit-slider-runnable-track {
+      height: 10px;
+      -webkit-appearance: none;
+      color: #13bba4;
+      margin-top: -1px;
+    }
+
+    .blueTable input[type='range']::-webkit-slider-thumb {
+      width: 10px;
+      -webkit-appearance: none;
+      height: 10px;
+      cursor: ew-resize;
+      background: #e4e3e3;
+      box-shadow: -80px 0 0 80px #437cf7;
+    }
+  }
+
+  .redTable input[type="range"]::-moz-range-progress {
+    background-color: #f74343;
+  }
+
+  .redTable input[type="range"]::-moz-range-track {
+    background-color: #410909;
+  }
+
+  /* IE*/
+  .redTable input[type="range"]::-ms-fill-lower {
+    background-color: #f74343;
+  }
+
+  .redTable input[type="range"]::-ms-fill-upper {
+    background-color: #410909;
+  }
+
+  .blueTable input[type="range"]::-moz-range-progress {
+    background-color: #437cf7;
+  }
+
+  .blueTable input[type="range"]::-moz-range-track {
+    background-color: #180941;
+  }
+
+  /* IE*/
+  .blueTable input[type="range"]::-ms-fill-lower {
+    background-color: #437cf7;
+  }
+
+  .blueTable input[type="range"]::-ms-fill-upper {
+    background-color: #180941;
+  }
+</style>
+
+<body>
+  <div class="section">
+    <div class="col">
+      <h2 class="title">Controls</h2>
+      <div class="buttons">
+        <button id="restartBtn">Restart</button>
+        <button id="stopBtn">Toggle Flash</button>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="col">
+      <h2>Original Source</h2>
+      <img id="originalImage" src="" alt="" width="360px" height="240px" style="display: none;" />
+      <canvas id="canvasInput" style="display: none;"></canvas>
+    </div>
+    <div class="col">
+
+      <table class="redTable">
+        <thead>
+          <tr>
+            <th>RED COLOR</th>
+          </tr>
+        </thead>
+        <tr>
+          <td>H min:&#160;&#160;&#160;<span id="RED_HMIN"></span></td>
+          <td>
+            <input type="range" id="red_hmin" min="0" max="179" value="50" class="slider" />
+          </td>
+          <td>H max:&#160;&#160;&#160;<span id="RED_HMAX"></span></td>
+          <td>
+            <input type="range" id="red_hmax" min="0" max="179" value="179" class="slider" />
+          </td>
+        </tr>
+        <tr>
+          <td>S min:&#160;&#160;&#160;<span id="RED_SMIN"></span></td>
+          <td>
+            <input type="range" id="red_smin" min="0" max="255" value="55" class="slider" />
+          </td>
+          <td>S max:&#160;&#160;&#160;<span id="RED_SMAX"></span></td>
+          <td>
+            <input type="range" id="red_smax" min="0" max="255" value="255" class="slider" />
+          </td>
+        </tr>
+        <tr>
+          <td>V min:&#160;&#160;&#160;<span id="RED_VMIN"></span></td>
+          <td>
+            <input type="range" id="red_vmin" min="0" max="255" value="100" class="slider" />
+          </td>
+          <td>V max:&#160;&#160;&#160;<span id="RED_VMAX"></span></td>
+          <td>
+            <input type="range" id="red_vmax" min="0" max="255" value="255" class="slider" />
+          </td>
+        </tr>
+      </table>
+      <table class="blueTable">
+        <thead>
+          <tr>
+            <th>BLUE COLOR</th>
+          </tr>
+        </thead>
+        <tr>
+          <td>H min:&#160;&#160;&#160;<span id="BLUE_HMIN"></span></td>
+          <td>
+            <input type="range" id="blue_hmin" min="0" max="179" value="11" class="slider" />
+          </td>
+          <td>H max:&#160;&#160;&#160;<span id="BLUE_HMAX"></span></td>
+          <td>
+            <input type="range" id="blue_hmax" min="0" max="179" value="100" class="slider" />
+          </td>
+        </tr>
+        <tr>
+          <td>S min:&#160;&#160;&#160;<span id="BLUE_SMIN"></span></td>
+          <td>
+            <input type="range" id="blue_smin" min="0" max="255" value="102" class="slider" />
+          </td>
+          <td>S max:&#160;&#160;&#160;<span id="BLUE_SMAX"></span></td>
+          <td>
+            <input type="range" id="blue_smax" min="0" max="255" value="255" class="slider" />
+          </td>
+        </tr>
+        <tr>
+          <td>V min:&#160;&#160;&#160;<span id="BLUE_VMIN"></span></td>
+          <td>
+            <input type="range" id="blue_vmin" min="0" max="255" value="60" class="slider" />
+          </td>
+          <td>V max:&#160;&#160;&#160;<span id="BLUE_VMAX"></span></td>
+          <td>
+            <input type="range" id="blue_vmax" min="0" max="255" value="255" class="slider" />
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <br />
+
+
+  <button id="processImage">Process Image</button>
+  <h2 class="title">Processed</h2>
+  <div class="gridProcessed">
+    <div class="view1">
+      <h2 class="title">Red Masked</h2>
+      <canvas style="display: none;" id="redMasked"></canvas>
+    </div>
+    <div class="view2">
+      <h2 class="title">Blue Masked</h2>
+      <canvas style="display: none;" id="blueMasked"></canvas>
+    </div>
+    <div class="view3">
+      <h2 class="title">Tracked Masked</h2>
+      <canvas style="display: none;" id="processedImage"></canvas>
+      <iframe id="ifr" style="display:none"></iframe>
+
+    </div>
+
+  </div>
+  <script src="./detection.js"></script>
+  </body>
+</html>
